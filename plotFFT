@@ -1,0 +1,65 @@
+import sounddevice as sd
+import numpy as np
+import scipy.io.wavfile as wav
+import time
+from scipy.fftpack import fft, rfft
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+#https://dsp.stackexchange.com/questions/20500/negative-values-of-the-fft
+
+#woof.1024hz.npy #meow.1024hz.npy 8192
+soundCaptures = np.load('woof.1024hz.npy')
+
+arrayLength = len(soundCaptures)
+captureLength = len(soundCaptures[0])
+
+
+# Number of sample points
+N = captureLength
+# sample spacing
+T = 1.0 / 1024.0
+
+#Create axis
+x = np.linspace(0.0, N*T, N)
+xf = np.linspace(0.0, 1.0/(2.0*T), N//2)
+
+ffts = []
+for i in range(arrayLength):
+    yf = rfft(soundCaptures[i])
+    
+    ySimplified = (2.0/N * np.abs(yf[0:N//2]))
+    
+    #ySimplified is actually an array of 1. Take the first value
+    yySimplified = []
+    for i in range(0, len(ySimplified)):
+        yySimplified.append(ySimplified[i][0])
+    
+    #Save fft for exporting - Only last 256 
+    ffts.append(yySimplified[768:])
+
+    #[6600:] for 8192Hz - [768:] for 1024Hz
+    plt.fill_between(xf[768:], yySimplified[768:], alpha=0.4 )
+    
+    plt.show()
+'''
+#Export
+
+fileName = 'combinedFFT.data'
+outputB0 = 0.0
+outputB1 = 1.0
+
+np.set_printoptions(precision=3)
+
+for i in range(len(ffts)):
+    ffts[i].append(outputB0)
+    ffts[i].append(outputB1)
+
+
+    #Write to file
+    f=open(fileName,'ab')
+    np.savetxt(f, [ffts[i]], delimiter=' ', fmt='%4.6f',)
+    f.close()
+
+'''
+
