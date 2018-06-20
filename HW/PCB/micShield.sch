@@ -2053,6 +2053,9 @@ Basic schematic elements and footprints for 0603, 1206, and PTH resistors.</desc
 <part name="R6" library="SparkFun-Resistors" deviceset="RESISTOR" device="0402" value="499k"/>
 <part name="C8" library="SparkFun-Capacitors" deviceset="CAP" device="0603-CAP"/>
 <part name="C9" library="SparkFun-Capacitors" deviceset="CAP" device="0603-CAP"/>
+<part name="C10" library="SparkFun-Capacitors" deviceset="CAP" device="0603-CAP"/>
+<part name="R9" library="SparkFun-Resistors" deviceset="RESISTOR" device="0402"/>
+<part name="R10" library="SparkFun-Resistors" deviceset="RESISTOR" device="0402"/>
 </parts>
 <sheets>
 <sheet>
@@ -2125,6 +2128,12 @@ Mic - 668-1585-1-ND</text>
 <attribute name="NAME" x="67.564" y="164.719" size="1.778" layer="95" rot="MR180"/>
 <attribute name="VALUE" x="67.564" y="169.799" size="1.778" layer="96" rot="MR180"/>
 </instance>
+<instance part="C10" gate="G$1" x="83.82" y="177.8" smashed="yes" rot="R180">
+<attribute name="NAME" x="85.344" y="174.879" size="1.778" layer="95" rot="MR180"/>
+<attribute name="VALUE" x="85.344" y="179.959" size="1.778" layer="96" rot="MR180"/>
+</instance>
+<instance part="R9" gate="G$1" x="335.28" y="78.74" rot="R90"/>
+<instance part="R10" gate="G$1" x="327.66" y="73.66" rot="R180"/>
 </instances>
 <busses>
 </busses>
@@ -2235,6 +2244,26 @@ Mic - 668-1585-1-ND</text>
 <pinref part="C9" gate="G$1" pin="1"/>
 <wire x1="66.04" y1="152.4" x2="66.04" y2="162.56" width="0.1524" layer="91"/>
 </segment>
+<segment>
+<pinref part="C10" gate="G$1" pin="1"/>
+<wire x1="83.82" y1="172.72" x2="83.82" y2="170.18" width="0.1524" layer="91"/>
+<label x="81.28" y="167.64" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="U$1" gate="G$1" pin="GND"/>
+<wire x1="274.32" y1="73.66" x2="271.78" y2="73.66" width="0.1524" layer="91"/>
+<label x="271.78" y="73.66" size="1.778" layer="95" rot="MR0"/>
+</segment>
+<segment>
+<pinref part="U$1" gate="G$1" pin="AGND"/>
+<wire x1="314.96" y1="71.12" x2="317.5" y2="71.12" width="0.1524" layer="91"/>
+<label x="317.5" y="71.12" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="U$1" gate="G$1" pin="GND2"/>
+<wire x1="314.96" y1="38.1" x2="317.5" y2="38.1" width="0.1524" layer="91"/>
+<label x="317.5" y="38.1" size="1.778" layer="95"/>
+</segment>
 </net>
 <net name="TO_AMP" class="0">
 <segment>
@@ -2278,7 +2307,7 @@ Mic - 668-1585-1-ND</text>
 <segment>
 <pinref part="U2" gate="A" pin="+V"/>
 <wire x1="27.94" y1="68.58" x2="27.94" y2="71.12" width="0.1524" layer="91"/>
-<label x="27.94" y="71.12" size="1.778" layer="95" rot="R90"/>
+<label x="30.48" y="73.66" size="1.778" layer="95" rot="R180"/>
 </segment>
 <segment>
 <pinref part="R15" gate="G$1" pin="1"/>
@@ -2487,6 +2516,11 @@ Mic - 668-1585-1-ND</text>
 <wire x1="195.58" y1="12.7" x2="195.58" y2="-5.08" width="0.1524" layer="91"/>
 <label x="195.58" y="-5.08" size="1.778" layer="95"/>
 </segment>
+<segment>
+<pinref part="U$1" gate="G$1" pin="14/A0"/>
+<wire x1="314.96" y1="43.18" x2="317.5" y2="43.18" width="0.1524" layer="91"/>
+<label x="317.5" y="43.18" size="1.778" layer="95"/>
+</segment>
 </net>
 <net name="N$16" class="0">
 <segment>
@@ -2564,6 +2598,19 @@ Mic - 668-1585-1-ND</text>
 <wire x1="101.6" y1="167.64" x2="104.14" y2="167.64" width="0.1524" layer="91"/>
 <label x="101.6" y="167.64" size="1.778" layer="95" rot="MR0"/>
 </segment>
+<segment>
+<pinref part="C10" gate="G$1" pin="2"/>
+<wire x1="83.82" y1="180.34" x2="83.82" y2="182.88" width="0.1524" layer="91"/>
+<label x="83.82" y="182.88" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="R9" gate="G$1" pin="1"/>
+<wire x1="340.36" y1="73.66" x2="335.28" y2="73.66" width="0.1524" layer="91"/>
+<pinref part="R10" gate="G$1" pin="1"/>
+<junction x="335.28" y="73.66"/>
+<wire x1="335.28" y1="73.66" x2="332.74" y2="73.66" width="0.1524" layer="91"/>
+<label x="340.36" y="73.66" size="1.778" layer="95"/>
+</segment>
 </net>
 <net name="N$2" class="0">
 <segment>
@@ -2611,6 +2658,21 @@ Mic - 668-1585-1-ND</text>
 <pinref part="R4" gate="G$1" pin="2"/>
 <wire x1="58.42" y1="170.18" x2="58.42" y2="165.1" width="0.1524" layer="91"/>
 <label x="58.42" y="167.64" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="N$5" class="0">
+<segment>
+<pinref part="U$1" gate="G$1" pin="VUSB"/>
+<pinref part="R9" gate="G$1" pin="2"/>
+<wire x1="335.28" y1="83.82" x2="335.28" y2="86.36" width="0.1524" layer="91"/>
+<wire x1="335.28" y1="86.36" x2="314.96" y2="86.36" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$11" class="0">
+<segment>
+<pinref part="U$1" gate="G$1" pin="VIN"/>
+<pinref part="R10" gate="G$1" pin="2"/>
+<wire x1="314.96" y1="73.66" x2="322.58" y2="73.66" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>
