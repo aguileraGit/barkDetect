@@ -2056,6 +2056,7 @@ Basic schematic elements and footprints for 0603, 1206, and PTH resistors.</desc
 <part name="C10" library="SparkFun-Capacitors" deviceset="CAP" device="0603-CAP"/>
 <part name="R9" library="SparkFun-Resistors" deviceset="RESISTOR" device="0402"/>
 <part name="R10" library="SparkFun-Resistors" deviceset="RESISTOR" device="0402"/>
+<part name="R12" library="SparkFun-Resistors" deviceset="RESISTOR" device="0402"/>
 </parts>
 <sheets>
 <sheet>
@@ -2134,6 +2135,7 @@ Mic - 668-1585-1-ND</text>
 </instance>
 <instance part="R9" gate="G$1" x="335.28" y="78.74" rot="R90"/>
 <instance part="R10" gate="G$1" x="327.66" y="73.66" rot="R180"/>
+<instance part="R12" gate="G$1" x="228.6" y="60.96" rot="R180"/>
 </instances>
 <busses>
 </busses>
@@ -2283,6 +2285,11 @@ Mic - 668-1585-1-ND</text>
 <wire x1="218.44" y1="35.56" x2="215.9" y2="35.56" width="0.1524" layer="91"/>
 <label x="215.9" y="35.56" size="1.778" layer="95" rot="MR0"/>
 </segment>
+<segment>
+<pinref part="U$1" gate="G$1" pin="33/A14"/>
+<wire x1="314.96" y1="15.24" x2="317.5" y2="15.24" width="0.1524" layer="91"/>
+<label x="317.5" y="15.24" size="1.778" layer="95"/>
+</segment>
 </net>
 <net name="GA1" class="0">
 <segment>
@@ -2290,12 +2297,22 @@ Mic - 668-1585-1-ND</text>
 <wire x1="218.44" y1="38.1" x2="215.9" y2="38.1" width="0.1524" layer="91"/>
 <label x="215.9" y="38.1" size="1.778" layer="95" rot="MR0"/>
 </segment>
+<segment>
+<pinref part="R12" gate="G$1" pin="1"/>
+<wire x1="233.68" y1="60.96" x2="241.3" y2="60.96" width="0.1524" layer="91"/>
+<label x="241.3" y="60.96" size="1.778" layer="95"/>
+</segment>
 </net>
 <net name="GA2" class="0">
 <segment>
 <pinref part="M1" gate="A" pin="P$2"/>
 <wire x1="218.44" y1="40.64" x2="215.9" y2="40.64" width="0.1524" layer="91"/>
 <label x="215.9" y="40.64" size="1.778" layer="95" rot="MR0"/>
+</segment>
+<segment>
+<pinref part="R12" gate="G$1" pin="2"/>
+<wire x1="223.52" y1="60.96" x2="215.9" y2="60.96" width="0.1524" layer="91"/>
+<label x="215.9" y="60.96" size="1.778" layer="95" rot="MR0"/>
 </segment>
 </net>
 <net name="V3_3P" class="0">
@@ -2338,6 +2355,11 @@ Mic - 668-1585-1-ND</text>
 <pinref part="M1" gate="A" pin="P$7"/>
 <wire x1="238.76" y1="43.18" x2="241.3" y2="43.18" width="0.1524" layer="91"/>
 <label x="241.3" y="43.18" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="U$1" gate="G$1" pin="34/A15"/>
+<wire x1="314.96" y1="17.78" x2="317.5" y2="17.78" width="0.1524" layer="91"/>
+<label x="317.5" y="17.78" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$6" class="0">
