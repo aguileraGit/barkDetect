@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="yes"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="2" unitdist="mil" unit="mil" style="lines" multiple="1" display="no" altdistance="5" altunitdist="mil" altunit="mil"/>
+<grid distance="2" unitdist="mil" unit="mm" style="lines" multiple="1" display="no" altdistance="5" altunitdist="mil" altunit="mil"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
@@ -14,13 +14,13 @@
 <layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
 <layer number="20" name="Dimension" color="24" fill="1" visible="yes" active="yes"/>
-<layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="21" name="tPlace" color="7" fill="1" visible="no" active="yes"/>
 <layer number="22" name="bPlace" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="yes"/>
 <layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="yes"/>
 <layer number="25" name="tNames" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="26" name="bNames" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="27" name="tValues" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="27" name="tValues" color="7" fill="1" visible="no" active="yes"/>
 <layer number="28" name="bValues" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="29" name="tStop" color="7" fill="3" visible="no" active="yes"/>
 <layer number="30" name="bStop" color="7" fill="6" visible="no" active="yes"/>
@@ -37,9 +37,9 @@
 <layer number="41" name="tRestrict" color="4" fill="10" visible="yes" active="yes"/>
 <layer number="42" name="bRestrict" color="1" fill="10" visible="yes" active="yes"/>
 <layer number="43" name="vRestrict" color="2" fill="10" visible="no" active="yes"/>
-<layer number="44" name="Drills" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="44" name="Drills" color="7" fill="1" visible="no" active="yes"/>
 <layer number="45" name="Holes" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="46" name="Milling" color="3" fill="1" visible="no" active="yes"/>
+<layer number="46" name="Milling" color="3" fill="1" visible="yes" active="yes"/>
 <layer number="47" name="Measures" color="7" fill="1" visible="no" active="yes"/>
 <layer number="48" name="Document" color="7" fill="1" visible="no" active="yes"/>
 <layer number="49" name="Reference" color="7" fill="1" visible="no" active="yes"/>
@@ -148,6 +148,8 @@
 <wire x1="105.283" y1="13.0556" x2="105.283" y2="31.242" width="0" layer="20"/>
 <wire x1="105.283" y1="31.242" x2="43.8912" y2="31.242" width="0" layer="20"/>
 <wire x1="43.8912" y1="31.242" x2="43.8912" y2="13.0556" width="0" layer="20"/>
+<text x="54.5592" y="19.2532" size="6.4516" layer="25">Mic Shield</text>
+<text x="84.582" y="16.002" size="1.9304" layer="25">v0.1</text>
 </plain>
 <libraries>
 <library name="LT6002">
@@ -305,10 +307,10 @@ chip</description>
 <description>&lt;b&gt;PUI Audio - PMM-3738-VM1010-R&lt;/b&gt;&lt;br&gt;
 &lt;a href="http://www.puiaudio.com/pdf/PMM-3738-VM1010-R.pdf"&gt;Datasheet&lt;/a&gt;</description>
 <pad name="8" x="0" y="0" drill="0.96" diameter="1.68"/>
-<smd name="3" x="-0.64" y="-1.015" dx="0.5" dy="0.5" layer="16" roundness="100"/>
+<smd name="3" x="-0.64" y="-1.015" dx="0.49" dy="0.49" layer="16" roundness="100"/>
 <smd name="2" x="1" y="-1.015" dx="0.5" dy="0.5" layer="16" roundness="100"/>
 <smd name="5" x="1" y="1.015" dx="0.5" dy="0.5" layer="16" roundness="100"/>
-<smd name="4" x="-0.64" y="1.015" dx="0.5" dy="0.5" layer="16" roundness="100"/>
+<smd name="4" x="-0.64" y="1.015" dx="0.49" dy="0.49" layer="16" roundness="100"/>
 <smd name="1" x="2.1" y="-1.015" dx="0.7" dy="0.7" layer="16" roundness="100"/>
 <smd name="6" x="2.1" y="1.015" dx="0.7" dy="0.7" layer="16" roundness="100"/>
 <smd name="7" x="2.1" y="0" dx="0.65" dy="0.65" layer="16" roundness="100"/>
@@ -691,6 +693,33 @@ chip</description>
 </package>
 </packages>
 </library>
+<library name="SparkFun-Aesthetics">
+<description>&lt;h3&gt;SparkFun Electronics' preferred foot prints&lt;/h3&gt;
+In this library you'll find non-functional items- supply symbols, logos, notations, frame blocks, etc.&lt;br&gt;&lt;br&gt;
+We've spent an enormous amount of time creating and checking these footprints and parts, but it is the end user's responsibility to ensure correctness and suitablity for a given componet or application. If you enjoy using this library, please buy one of our products at www.sparkfun.com.
+&lt;br&gt;&lt;br&gt;
+&lt;b&gt;Licensing:&lt;/b&gt; Creative Commons ShareAlike 4.0 International - https://creativecommons.org/licenses/by-sa/4.0/ 
+&lt;br&gt;&lt;br&gt;
+You are welcome to use this library for commercial purposes. For attribution, we ask that when you begin to sell your device using our footprint, you email us with a link to the product being sold. We want bragging rights that we helped (in a very small part) to create your 8th world wonder. We would like the opportunity to feature your device on our homepage.</description>
+<packages>
+<package name="CREATIVE_COMMONS">
+</package>
+</packages>
+</library>
+<library name="SparkFun-Passives">
+<description>&lt;h3&gt;SparkFun Electronics' preferred foot prints&lt;/h3&gt;
+In this library you'll find resistors, capacitors, inductors, test points, jumper pads, etc.&lt;br&gt;&lt;br&gt;
+We've spent an enormous amount of time creating and checking these footprints and parts, but it is the end user's responsibility to ensure correctness and suitablity for a given componet or application. If you enjoy using this library, please buy one of our products at www.sparkfun.com.
+&lt;br&gt;&lt;br&gt;
+&lt;b&gt;Licensing:&lt;/b&gt; Creative Commons ShareAlike 4.0 International - https://creativecommons.org/licenses/by-sa/4.0/ 
+&lt;br&gt;&lt;br&gt;
+You are welcome to use this library for commercial purposes. For attribution, we ask that when you begin to sell your device using our footprint, you email us with a link to the product being sold. We want bragging rights that we helped (in a very small part) to create your 8th world wonder. We would like the opportunity to feature your device on our homepage.</description>
+<packages>
+<package name="PAD.03X.03">
+<smd name="P$1" x="0" y="0" dx="0.762" dy="0.762" layer="1" roundness="100" cream="no"/>
+</package>
+</packages>
+</library>
 </libraries>
 <attributes>
 </attributes>
@@ -700,7 +729,7 @@ chip</description>
 <class number="0" name="default" width="0" drill="0">
 </class>
 </classes>
-<designrules name="jlcpcb-dru">
+<designrules name="jlcpcb-dru *">
 <description language="de">&lt;b&gt;EAGLE Design Rules&lt;/b&gt;
 &lt;p&gt;
 Die Standard-Design-Rules sind so gewählt, dass sie für 
@@ -726,7 +755,7 @@ https://jlcpcb.com</description>
 <param name="mdViaViaSameLayer" value="6mil"/>
 <param name="mnLayersViaInSmd" value="2"/>
 <param name="mdCopperDimension" value="40mil"/>
-<param name="mdDrill" value="6mil"/>
+<param name="mdDrill" value="8mil"/>
 <param name="mdSmdStop" value="0mil"/>
 <param name="msWidth" value="5mil"/>
 <param name="msDrill" value="0.2mm"/>
@@ -905,7 +934,7 @@ https://jlcpcb.com</description>
 <element name="R14" library="SparkFun-Resistors" package="0402-RES" value="3k" x="95.3641" y="21.62796875" smashed="yes" rot="MR180">
 <attribute name="NAME" x="96.7611" y="22.23756875" size="0.4064" layer="26" font="vector" rot="MR180"/>
 </element>
-<element name="M1" library="MIC" package="PMM-3738-VM1010-R" value="PMM-3738-VM1010-R" x="101.1428" y="22.1488" rot="MR0"/>
+<element name="M1" library="MIC" package="PMM-3738-VM1010-R" value="PMM-3738-VM1010-R" x="101.12" y="22.1488" rot="MR0"/>
 <element name="R15" library="SparkFun-Resistors" package="0402-RES" value="" x="71.8058" y="18.3388" rot="MR180"/>
 <element name="R16" library="SparkFun-Resistors" package="0402-RES" value="" x="71.8058" y="20.259675" rot="MR0"/>
 <element name="R17" library="SparkFun-Resistors" package="0402-RES" value="" x="71.8058" y="22.1996" rot="MR0"/>
@@ -1010,6 +1039,14 @@ https://jlcpcb.com</description>
 <element name="R9" library="SparkFun-Resistors" package="0402-RES" value="" x="47.9044" y="18.3896" rot="MR90"/>
 <element name="R10" library="SparkFun-Resistors" package="0402-RES" value="" x="45.3644" y="18.3896" rot="MR90"/>
 <element name="R12" library="SparkFun-Resistors" package="0402-RES" value="" x="100.9904" y="18.9992" rot="R180"/>
+<element name="FRAME2" library="SparkFun-Aesthetics" package="CREATIVE_COMMONS" value="FRAME-LETTER" x="36.9824" y="6.1468"/>
+<element name="FRAME1" library="SparkFun-Aesthetics" package="CREATIVE_COMMONS" value="FRAME-LETTER" x="35.9664" y="5.1308"/>
+<element name="TP1" library="SparkFun-Passives" package="PAD.03X.03" value="TEST-POINT3" x="99.06" y="26.5176"/>
+<element name="TP2" library="SparkFun-Passives" package="PAD.03X.03" value="TEST-POINT3" x="99.3648" y="17.8816"/>
+<element name="TP3" library="SparkFun-Passives" package="PAD.03X.03" value="TEST-POINT3" x="102.616" y="17.8816"/>
+<element name="TP4" library="SparkFun-Passives" package="PAD.03X.03" value="TEST-POINT3" x="100.1268" y="25.2476"/>
+<element name="TP5" library="SparkFun-Passives" package="PAD.03X.03" value="TEST-POINT3" x="97.8408" y="19.9644"/>
+<element name="TP6" library="SparkFun-Passives" package="PAD.03X.03" value="TEST-POINT3" x="97.6884" y="24.0792"/>
 </elements>
 <signals>
 <signal name="N$1">
@@ -1107,7 +1144,7 @@ https://jlcpcb.com</description>
 <signal name="TO_AMP">
 <contactref element="R1" pad="1"/>
 <contactref element="M1" pad="1"/>
-<wire x1="99.0428" y1="21.1338" x2="93.4538" y2="15.5448" width="0.1524" layer="1"/>
+<wire x1="99.02" y1="21.1338" x2="93.4538" y2="15.5448" width="0.1524" layer="1"/>
 <via x="73.5076" y="19.304" extent="1-16" drill="0.2"/>
 <wire x1="73.5076" y1="19.304" x2="73.673725" y2="19.304" width="0.1524" layer="16"/>
 <wire x1="73.673725" y1="19.304" x2="74.6294" y2="20.259675" width="0.1524" layer="16"/>
@@ -1117,26 +1154,39 @@ https://jlcpcb.com</description>
 <wire x1="73.5076" y1="19.304" x2="73.5076" y2="18.1864" width="0.1524" layer="1"/>
 <wire x1="73.5076" y1="18.1864" x2="73.5584" y2="18.1864" width="0.1524" layer="1"/>
 <wire x1="73.5584" y1="18.1864" x2="74.676" y2="17.0688" width="0.1524" layer="1"/>
+<contactref element="TP5" pad="P$1"/>
+<wire x1="99.02" y1="21.1338" x2="97.8408" y2="19.9644" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="MODE">
 <contactref element="M1" pad="5"/>
 <contactref element="U$1" pad="33/A14"/>
-<wire x1="100.1428" y1="23.1638" x2="100.1428" y2="24.0124" width="0.1524" layer="1"/>
-<wire x1="100.1428" y1="24.0124" x2="100.1268" y2="24.0284" width="0.1524" layer="1"/>
-<wire x1="100.1268" y1="24.0284" x2="103.7844" y2="27.686" width="0.1524" layer="1"/>
-<wire x1="103.7844" y1="27.686" x2="103.7844" y2="29.7688" width="0.1524" layer="1"/>
+<wire x1="100.12" y1="23.1638" x2="100.1268" y2="23.1706" width="0.1524" layer="1"/>
+<wire x1="100.1268" y1="23.1706" x2="100.1268" y2="25.2476" width="0.1524" layer="1"/>
+<wire x1="100.1268" y1="25.2476" x2="103.7844" y2="28.9052" width="0.1524" layer="1"/>
+<wire x1="103.7844" y1="28.9052" x2="103.7844" y2="29.7688" width="0.1524" layer="1"/>
+<contactref element="TP4" pad="P$1"/>
 </signal>
 <signal name="GA1">
 <contactref element="M1" pad="3"/>
 <contactref element="R12" pad="1"/>
-<wire x1="101.7828" y1="21.1338" x2="101.7828" y2="19.2116" width="0.1524" layer="1"/>
+<wire x1="101.76" y1="21.1338" x2="101.7524" y2="21.1262" width="0.1524" layer="1"/>
+<wire x1="101.7524" y1="21.1262" x2="101.7524" y2="18.9992" width="0.1524" layer="1"/>
+<wire x1="101.7524" y1="18.9992" x2="101.7828" y2="19.2116" width="0.1524" layer="1"/>
 <wire x1="101.7828" y1="19.2116" x2="101.5704" y2="18.9992" width="0.1524" layer="1"/>
+<contactref element="TP3" pad="P$1"/>
+<wire x1="102.616" y1="17.8816" x2="101.7524" y2="18.7452" width="0.1524" layer="1"/>
+<wire x1="101.7524" y1="18.7452" x2="101.7524" y2="18.9992" width="0.1524" layer="1"/>
 </signal>
 <signal name="GA2">
 <contactref element="M1" pad="2"/>
 <contactref element="R12" pad="2"/>
-<wire x1="100.1428" y1="21.1338" x2="100.1428" y2="19.2668" width="0.1524" layer="1"/>
+<wire x1="100.12" y1="21.1338" x2="100.1268" y2="21.127" width="0.1524" layer="1"/>
+<wire x1="100.1268" y1="21.127" x2="100.1268" y2="19.1516" width="0.1524" layer="1"/>
+<wire x1="100.1268" y1="19.1516" x2="100.1428" y2="19.2668" width="0.1524" layer="1"/>
 <wire x1="100.1428" y1="19.2668" x2="100.4104" y2="18.9992" width="0.1524" layer="1"/>
+<contactref element="TP2" pad="P$1"/>
+<wire x1="99.3648" y1="17.8816" x2="100.4104" y2="18.9272" width="0.1524" layer="1"/>
+<wire x1="100.4104" y1="18.9272" x2="100.4104" y2="18.9992" width="0.1524" layer="1"/>
 </signal>
 <signal name="V3_3P">
 <contactref element="M1" pad="6"/>
@@ -1169,8 +1219,9 @@ https://jlcpcb.com</description>
 <wire x1="60.2116" y1="17.6276" x2="60.2488" y2="17.5904" width="0.127" layer="16"/>
 <wire x1="60.2488" y1="17.5904" x2="60.2488" y2="16.9164" width="0.127" layer="16"/>
 <wire x1="60.9092" y1="16.256" x2="60.2488" y2="16.9164" width="0.127" layer="16"/>
-<wire x1="99.0428" y1="23.1638" x2="99.0428" y2="26.5348" width="0.1524" layer="1"/>
-<wire x1="99.0428" y1="26.5348" x2="97.282" y2="28.2956" width="0.1524" layer="1"/>
+<wire x1="99.02" y1="23.1638" x2="99.06" y2="23.1648" width="0.1524" layer="1"/>
+<wire x1="99.06" y1="23.1648" x2="99.06" y2="26.5176" width="0.1524" layer="1"/>
+<wire x1="99.06" y1="26.5176" x2="97.282" y2="28.2956" width="0.1524" layer="1"/>
 <wire x1="70.7136" y1="28.2956" x2="69.2912" y2="26.8732" width="0.1524" layer="1"/>
 <wire x1="97.282" y1="28.2956" x2="70.7136" y2="28.2956" width="0.1524" layer="1"/>
 <via x="69.2912" y="21.2852" extent="1-16" drill="0.2"/>
@@ -1185,15 +1236,18 @@ https://jlcpcb.com</description>
 <wire x1="70.8152" y1="23.5204" x2="69.85" y2="22.5552" width="0.1524" layer="16"/>
 <wire x1="69.85" y1="22.5552" x2="69.85" y2="21.844" width="0.1524" layer="16"/>
 <wire x1="69.85" y1="21.844" x2="69.2912" y2="21.2852" width="0.1524" layer="16"/>
+<contactref element="TP1" pad="P$1"/>
 </signal>
 <signal name="DOUT">
 <contactref element="M1" pad="7"/>
 <contactref element="U$1" pad="34/A15"/>
-<wire x1="99.0428" y1="22.1488" x2="98.1456" y2="22.1488" width="0.1524" layer="1"/>
+<wire x1="99.02" y1="22.1488" x2="98.1456" y2="22.1488" width="0.1524" layer="1"/>
 <wire x1="98.1456" y1="22.1488" x2="97.6884" y2="22.606" width="0.1524" layer="1"/>
 <via x="97.6884" y="22.606" extent="1-16" drill="0.35"/>
 <wire x1="97.6884" y1="22.606" x2="101.2444" y2="26.162" width="0.1524" layer="16"/>
 <wire x1="101.2444" y1="26.162" x2="101.2444" y2="29.7688" width="0.1524" layer="16"/>
+<contactref element="TP6" pad="P$1"/>
+<wire x1="97.6884" y1="24.0792" x2="97.6884" y2="22.606" width="0.1524" layer="1"/>
 </signal>
 <signal name="N$6">
 <contactref element="R15" pad="2"/>
