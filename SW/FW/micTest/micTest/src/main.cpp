@@ -1,86 +1,44 @@
 /*
- * Blink
- * Turns on an LED on for one second,
- * then off for one second, repeatedly.
+ * A simple hardware test which receives audio on the A2 analog pin
+ * and sends it to the PWM (pin 3) output and DAC (A14 pin) output.
+ *
+ * This example code is in the public domain.
  */
 
 #include <Arduino.h>
-
-// FFT Test
-//
-// Compute a 1024 point Fast Fourier Transform (spectrum analysis)
-// on audio connected to the Left Line-In pin.  By changing code,
-// a synthetic sine wave can be input instead.
-//
-// The first 40 (of 512) frequency analysis bins are printed to
-// the Arduino Serial Monitor.  Viewing the raw data can help you
-// understand how the FFT works and what results to expect when
-// using the data to control LEDs, motors, or other fun things!
-//
-// This example code is in the public domain.
-
 #include <Audio.h>
 #include <Wire.h>
 #include <SPI.h>
 #include <SD.h>
 #include <SerialFlash.h>
 
-const int myInput = AUDIO_INPUT_LINEIN;
-//const int myInput = AUDIO_INPUT_MIC;
+/*
+AudioInputAnalog was found under Audio/input_adc.cpp.
+https://github.com/PaulStoffregen/Audio/blob/master/input_adc.cpp
 
-// Create the Audio components.  These should be created in the
-// order data flows, inputs/sources -> processing -> outputs
-//
-AudioInputI2S          audioInput;         // audio shield: mic or line-in
-AudioSynthWaveformSine sinewave;
-AudioAnalyzeFFT1024    myFFT;
-AudioOutputI2S         audioOutput;        // audio shield: headphones & line-out
+I believe line 66 sets the ADC sampling speed
 
-// Connect either the live input or synthesized sine wave
-AudioConnection patchCord1(audioInput, 0, myFFT, 0);
-//AudioConnection patchCord1(sinewave, 0, myFFT, 0);
+Work on setting slower sampling rate
+*/
 
-AudioControlSGTL5000 audioShield;
+// GUItool: begin automatically generated code
+AudioInputAnalog         adc1;           //xy=161,80
+AudioOutputAnalog        dac1;           //xy=329,47
+AudioOutputPWM           pwm1;           //xy=331,125
+AudioConnection          patchCord1(adc1, dac1);
+AudioConnection          patchCord2(adc1, pwm1);
+// GUItool: end automatically generated code
 
 void setup() {
   // Audio connections require memory to work.  For more
   // detailed information, see the MemoryAndCpuUsage example
   AudioMemory(12);
 
-  // Enable the audio shield and set the output volume.
-  audioShield.enable();
-  audioShield.inputSelect(myInput);
-  audioShield.volume(0.5);
-
-  // Configure the window algorithm to use
-  myFFT.windowFunction(AudioWindowHanning1024);
-  //myFFT.windowFunction(NULL);
-
-  // Create a synthetic sine wave, for testing
-  // To use this, edit the connections above
-  sinewave.amplitude(0.8);
-  sinewave.frequency(1034.007);
+  adc1.
 }
 
 void loop() {
-  float n;
-  int i;
+  // Do nothing here.  The Audio flows automatically
 
-  if(myFFT.available())
-
-  if (myFFT.available()) {
-    // each time new FFT data is available
-    // print it all to the Arduino Serial Monitor
-    Serial.print("FFT: ");
-    for (i=0; i<40; i++) {
-      n = myFFT.read(i);
-      if (n >= 0.01) {
-        Serial.print(n);
-        Serial.print(" ");
-      } else {
-        Serial.print("  -  "); // don't print "0.00"
-      }
-    }
-    Serial.println();
-  }
+  // When AudioInputAnalog is running, analogRead() must NOT be used.
 }
