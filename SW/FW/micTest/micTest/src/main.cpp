@@ -13,47 +13,33 @@
 #include <SerialFlash.h>
 
 /*
-AudioInputAnalog was found under Audio/input_adc.cpp.
-https://github.com/PaulStoffregen/Audio/blob/master/input_adc.cpp
-
-From input_adc
-https://github.com/PaulStoffregen/Audio/blob/master/input_adc.cpp
-
 uC Reference
 https://www.nxp.com/docs/en/reference-manual/K66P144M180SF5RMV2.pdf
 
+Change sampling speed reference
 https://forum.pjrc.com/threads/24492-Using-the-PDB-on-Teensy-3 #8
-
-
-#define PDB_CONFIG (PDB_SC_TRGSEL(15) | PDB_SC_PDBEN | PDB_SC_PDBIE \
-	| PDB_SC_CONT | PDB_SC_PRESCALER(7) | PDB_SC_MULT(1))
-
-// 48 MHz / 128 / 10 / 1 Hz = 37500
-#define PDB_PERIOD (F_BUS / 128 / 10 / 1)
 */
 
 // GUItool: begin automatically generated code
-//AudioInputAnalog         adc1;           //xy=161,80
-//AudioOutputAnalog        dac1;           //xy=329,47
-//AudioOutputPWM           pwm1;           //xy=331,125
-//AudioConnection          patchCord1(adc1, dac1);
-//AudioConnection          patchCord2(adc1, pwm1);
-// GUItool: end automatically generated code
+AudioInputAnalog         adc1;           //xy=161,80
+AudioOutputAnalog        dac1;           //xy=329,47
+AudioOutputPWM           pwm1;           //xy=331,125
+AudioConnection          patchCord1(adc1, dac1);
+AudioConnection          patchCord2(adc1, pwm1);
 
 uint8_t ledOn = 0;
 
 #define PDB_CONFIG (PDB_SC_TRGSEL(15) | PDB_SC_PDBEN | PDB_SC_PDBIE \
 	| PDB_SC_CONT | PDB_SC_PRESCALER(3) | PDB_SC_MULT(0))
 
-//Define 4kHz
-#define PDB_PERIOD (F_BUS / 8 / 1 / 5625)
-
 #define PDB_CH0C1_TOS 0x0100
 #define PDB_CH0C1_EN 0x01
 
-void pdbInit() {
-	pinMode(13, OUTPUT);
+//Define 4kHz
+#define PDB_PERIOD (F_BUS / 8 / 4 / 2001)
 
+
+void pdbInit() {
 	// Enable PDB clock
 	SIM_SCGC6 |= SIM_SCGC6_PDB;
 	// Timer period
@@ -74,14 +60,19 @@ void pdbInit() {
 void setup() {
   // Audio connections require memory to work.  For more
   // detailed information, see the MemoryAndCpuUsage example
-  //AudioMemory(12);
+  AudioMemory(12);
 
   Serial.begin(9600);
-	while (!Serial);
+	//while (!Serial);
 
+	//Wait for Serial
+	delay(1000);
+
+	//Change pdb speed to 4kHz
   pdbInit();
 
-  Serial.println(F_CPU);
+	//Serial.println(F_CPU);
+
 }
 
 
@@ -92,6 +83,7 @@ void loop() {
 }
 
 
+/*
 void pdb_isr() {
 	Serial.print("pdb isr: ");
 	Serial.println(millis());
@@ -99,3 +91,4 @@ void pdb_isr() {
 	// Clear interrupt flag
 	PDB0_SC &= ~PDB_SC_PDBIF;
 }
+*/
