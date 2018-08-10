@@ -1,0 +1,397 @@
+/*
+* ADC pin 16
+* DAC pin DA0
+* 
+* Picoscope setup with Sine wave with 250mV amplitude and 600mV offset
+* 
+* format /FS:FAT32 X:
+*/
+
+#include <Arduino.h>
+#include <Audio.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <SD.h>
+#include <SerialFlash.h>
+#include <Entropy.h>
+
+#include "Tinn.h"
+
+/*
+uC Reference
+https://www.nxp.com/docs/en/reference-manual/K66P144M180SF5RMV2.pdf
+
+Change sampling speed reference
+https://forum.pjrc.com/threads/24492-Using-the-PDB-on-Teensy-3 #8
+
+https://forum.pjrc.com/threads/53212-Slowing-down-the-PDB?p=183860#post183860
+*/
+
+//Inputs
+AudioInputAnalog         adc1;           //xy=161,80
+//AudioSynthWaveformSine   sinewave;
+
+//Outputs
+//AudioOutputAnalog        dac1;           //xy=329,47
+//AudioOutputPWM           pwm1;           //xy=331,125
+AudioAnalyzeFFT1024      fft1;
+
+
+//AudioConnection          patchCord1(adc1, dac1);
+//AudioConnection          patchCord2(adc1, pwm1);
+//AudioConnection          patchCord(adc1, fft1);
+AudioConnection          patchCord(adc1, fft1);
+
+//Debug LED
+uint8_t ledOn = 0;
+
+//Menu items
+volatile bool menuPrintFFT = false;
+volatile bool menuLoadData = false;
+volatile bool menuTrainData = false;
+volatile bool menuPredictData = false;
+volatile bool menuPrintMenu = false;
+
+//Always store the latest FFT for analysis, printing, etc
+#define FFTLENGTH 512
+float latestFFT[FFTLENGTH];
+
+//Define data file
+//File file;
+#define FILENAME "mostlyWoods.data"
+
+//SD Card
+const int chipSelect = BUILTIN_SDCARD;
+
+//TINN related
+const int nips = 512;
+const int nops = 2;
+float rate = 0.1f;
+const int nhid = 48;
+const float anneal = 0.99f;
+const int iterations = 32;
+
+// Data object.
+typedef struct {
+    // 2D floating point array of input.
+    float** in;
+    // 2D floating point array of target.
+    float** tg;
+    // Number of inputs to neural network.
+    int nips;
+    // Number of outputs to neural network.
+    int nops;
+    // Number of rows in file (number of sets for neural network).
+    int rows;
+} Data;
+
+void printMenu(void);
+void printFFT(void);
+void processIncomingSerial(int incomingByte);
+
+uint32_t seed_value;
+
+
+void setup() {
+  // Audio connections require memory to work.  For more
+  // detailed information, see the MemoryAndCpuUsage example
+  AudioMemory(12);
+
+  //Define Windowing
+  fft1.windowFunction(AudioWindowHanning1024);
+
+  //Test with sinewave
+  //sinewave.amplitude(0.8);
+  //sinewave.frequency(100.0);
+
+  //Setup LED
+  pinMode(13, OUTPUT);
+  
+  //Serial.begin(9600);
+  //while (!Serial);
+
+  //Wait for Serial
+  digitalWrite(13, HIGH);
+  delay(1000);
+
+  //Change sampling rate to 8kHz. Done in utility/pdb.h
+
+  menuPrintFFT = false;
+  menuLoadData = false;
+  menuTrainData = false;
+  menuPredictData = false;
+  menuPrintMenu = true;
+
+  //Start SD Card
+  Serial.print("Initializing SD card...");
+
+  if (!SD.begin(chipSelect)) {
+  Serial.println("initialization failed!");
+  return;
+  }
+  
+  Serial.println("initialization done.");
+
+  Entropy.Initialize();
+  seed_value = Entropy.random();
+}
+
+
+void loop() {
+
+  //Handle incoming serial - Function called should always set/unset a boolean
+  int incomingByte;
+  if (Serial.available() > 0) {
+    incomingByte = Serial.read();
+    processIncomingSerial(incomingByte);
+  }//End serial if
+
+  //Get latest FFT
+  if (fft1.available()) {
+    
+    //Debug LED
+    digitalWrite(13, (ledOn = !ledOn));
+
+    //Get FFT
+    getFFT();
+
+    //Print FFT
+    if(menuPrintFFT){
+      printFFT();
+    }
+
+    //Predict - Continuous
+    if(menuPredictData){
+      //Some function to predict data
+    }
+
+    
+  }//End if fft.available
+
+
+
+  //Load training data
+  if(menuLoadData){
+    menuLoadData = false;
+
+    const Data data = build(FILENAME, nips, nops);
+  }
+
+  //Train data
+  if(menuTrainData){
+    menuTrainData = false;
+
+    const Tinn tinn = xtbuild(nips, nhid, nops);
+  }
+
+  //Print Menu
+  if(menuPrintMenu){
+    menuPrintMenu = false;
+    printMenu();
+  }
+  
+  
+}
+
+
+//********** Begin other functions **********//
+
+void printMenu(void){
+  Serial.println("===Menu===");
+  Serial.println("f - Print FFT values");
+  Serial.println("l - Load training data");
+  Serial.println("t - Train data");
+  Serial.println("p - Predict data");
+  Serial.println("h - Prints this menu");
+}
+
+void getFFT(void){
+  int i;
+  for (i=0; i<512; i++) {
+      latestFFT[i] = fft1.read(i);
+  }
+}
+
+void printFFT(void){
+  int i;
+  for(i=0; i<FFTLENGTH; i++){
+    Serial.print( latestFFT[i], 4 );
+    Serial.print(" ");
+  }
+  Serial.println(" ");
+}
+
+
+void processIncomingSerial(int incomingByte){
+
+    switch(incomingByte){
+      case 'f': 
+        menuPrintFFT = !menuPrintFFT;
+        if(menuPrintFFT){ 
+          Serial.println("Print FFT ON");
+        } else {
+          Serial.println("Print FFT OFF");
+        }
+        break;
+
+      case 'l':
+        Serial.println("Load Data");
+        menuLoadData = true;
+        break;
+
+      case 't':
+        menuTrainData = true;
+        Serial.println("Train Data");
+        break;
+
+      case 'p':
+        menuPredictData = !menuPredictData;
+        if(menuPredictData){
+          Serial.println("Predicting Data");
+        } else {
+          Serial.println("Done Predicting Data");
+        }
+
+      case 'h':
+        menuPrintMenu = true;
+        break;
+        
+      default:
+        break;
+    }
+}
+
+//************* TINN *****************//
+
+// Modified! - Returns the number of lines in a file.
+//static int lns(FILE* const file)
+static int lns(const char* file){
+
+    int ch = EOF;
+    int lines = 0;
+    int pc = '\n';
+
+    //Open file for reading
+    File myFile;
+    myFile = SD.open(file , FILE_READ);
+
+    //while((ch = getc(file)) != EOF)
+    while(ch = myFile.available()){
+      Serial.write(myFile.read() );
+        if(ch == '\n')
+        Serial.println("");
+            lines++;
+        pc = ch;
+    }
+    if(pc != '\n')
+        lines++;
+    //rewind(file);
+    myFile.close();
+    return lines;
+}
+
+
+// Modified - Reads a line from a file.
+//static char* readln(FILE* const file)
+static char* readln(const char* file){
+    int ch = EOF;
+    int reads = 0;
+    int size = 128;
+    char* line = (char*) malloc((size) * sizeof(char));
+
+    //Open file for reading
+    File myFile;
+    myFile = SD.open(file , FILE_READ);
+    
+    //while((ch = getc(file)) != '\n' && ch != EOF)
+    while( myFile.available() && ((ch = myFile.read()) != '\n') )
+    {
+        line[reads++] = ch;
+        if(reads + 1 == size)
+            line = (char*) realloc((line), (size *= 2) * sizeof(char));
+    }
+    line[reads] = '\0';
+
+    myFile.close();
+    
+    return line;
+}
+
+// New 2D array of floats.
+static float** new2d(const int rows, const int cols){
+    float** row = (float**) malloc((rows) * sizeof(float*));
+    for(int r = 0; r < rows; r++)
+        row[r] = (float*) malloc((cols) * sizeof(float));
+    return row;
+}
+
+// New data object.
+static Data ndata(const int nips, const int nops, const int rows){
+    const Data data = {
+        new2d(rows, nips), new2d(rows, nops), nips, nops, rows
+    };
+    return data;
+}
+
+// Gets one row of inputs and outputs from a string.
+static void parse(const Data data, char* line, const int row)
+{
+    const int cols = data.nips + data.nops;
+    for(int col = 0; col < cols; col++)
+    {
+        const float val = atof(strtok(col == 0 ? line : NULL, " "));
+        if(col < data.nips)
+            data.in[row][col] = val;
+        else
+            data.tg[row][col - data.nips] = val;
+    }
+}
+
+// Frees a data object from the heap.
+static void dfree(const Data d)
+{
+    for(int row = 0; row < d.rows; row++)
+    {
+        free(d.in[row]);
+        free(d.tg[row]);
+    }
+    free(d.in);
+    free(d.tg);
+}
+
+// Randomly shuffles a data object.
+static void shuffle(const Data d)
+{
+    for(int a = 0; a < d.rows; a++)
+    {
+        //const int b = rand() % d.rows;
+        const int b = Entropy.random() % d.rows;
+        float* ot = d.tg[a];
+        float* it = d.in[a];
+        // Swap output.
+        d.tg[a] = d.tg[b];
+        d.tg[b] = ot;
+        // Swap input.
+        d.in[a] = d.in[b];
+        d.in[b] = it;
+    }
+}
+
+//Modified - Uses path instead of file. Other changes.
+static Data build(const char* path, const int nips, const int nops){
+
+  //File open/close functions are done per function (lns and readln)
+  const int rows = lns(path);
+  Serial.println(rows, DEC);
+
+  Data data = ndata(nips, nops, rows);
+
+  for(int row = 0; row < rows; row++){
+      char* line = readln(path);
+      parse(data, line, row);
+      free(line);
+  }
+  Serial.println("Done Building");
+  
+  return data;
+}
