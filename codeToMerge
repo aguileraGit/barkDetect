@@ -15,7 +15,10 @@
 #include <SerialFlash.h>
 #include <Entropy.h>
 
-#include "Tinn.h"
+extern "C"{
+  #include "Tinn.h"
+}
+
 
 /*
 uC Reference
@@ -25,6 +28,8 @@ Change sampling speed reference
 https://forum.pjrc.com/threads/24492-Using-the-PDB-on-Teensy-3 #8
 
 https://forum.pjrc.com/threads/53212-Slowing-down-the-PDB?p=183860#post183860
+
+https://github.com/glouw/tinn
 */
 
 //Inputs
@@ -58,7 +63,7 @@ float latestFFT[FFTLENGTH];
 
 //Define data file
 //File file;
-#define FILENAME "mostlyWoods.data"
+#define FILENAME "mostlyWoofs.data"
 
 //SD Card
 const int chipSelect = BUILTIN_SDCARD;
@@ -84,6 +89,8 @@ typedef struct {
     // Number of rows in file (number of sets for neural network).
     int rows;
 } Data;
+
+Data data;
 
 void printMenu(void);
 void printFFT(void);
@@ -165,7 +172,6 @@ void loop() {
       //Some function to predict data
     }
 
-    
   }//End if fft.available
 
 
@@ -173,15 +179,44 @@ void loop() {
   //Load training data
   if(menuLoadData){
     menuLoadData = false;
-
-    const Data data = build(FILENAME, nips, nops);
+    
+    //Modified
+    data = build(FILENAME, nips, nops);
   }
 
   //Train data
   if(menuTrainData){
     menuTrainData = false;
 
+    //Start training
     const Tinn tinn = xtbuild(nips, nhid, nops);
+    for(int i = 0; i < iterations; i++){
+        shuffle(data);
+        float error = 0.0f;
+        for(int j = 0; j < data.rows; j++){
+            const float* const in = data.in[j];
+            const float* const tg = data.tg[j];
+            error += xttrain(tinn, in, tg, rate);
+        }
+        /*printf("error %.12f :: learning rate %f\n",
+            (double) error / data.rows,
+            (double) rate);
+        */
+        
+        Serial.print("Error ");
+        Serial.print( (error / data.rows), 4 );
+        Serial.print(" :: learning rate ");
+        Serial.print(rate, 4);
+        Serial.println(" ");
+           
+        rate *= anneal;
+    }
+
+    //Need to modify function to save Tinn
+
+    dfree(data);
+
+    Serial.println("Done Building");
   }
 
   //Print Menu
@@ -271,6 +306,9 @@ static int lns(const char* file){
     int lines = 0;
     int pc = '\n';
 
+    Serial.print("FileName: ");
+    Serial.println(file);
+    
     //Open file for reading
     File myFile;
     myFile = SD.open(file , FILE_READ);
