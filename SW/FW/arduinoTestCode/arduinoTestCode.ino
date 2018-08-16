@@ -21,7 +21,7 @@ typedef struct {
 
 Data data;
 
-#define FILENAME "mostlyWoofs.data"
+#define FILENAME "data"
 
 const int chipSelect = BUILTIN_SDCARD;
 
@@ -55,27 +55,73 @@ static Data build(const char* path, const int nips, const int nops){
   //File open/close functions are done per function (lns and readln)
   const int rows = lns(path);
 
-  /*
   Serial.println(rows, DEC);
 
   Data data = ndata(nips, nops, rows);
 
   for(int row = 0; row < rows; row++){
-      char* line = readln(path);
-      parse(data, line, row);
-      free(line);
+    Serial.println("New line");
+      readln(path);
+      //parse(data, line, row);
+      //free(line);
   }
   Serial.println("Done Building");
   
   return data;
-  */
+  
+}
+
+// New 2D array of floats.
+static float** new2d(const int rows, const int cols){
+    float** row = (float**) malloc((rows) * sizeof(float*));
+    for(int r = 0; r < rows; r++)
+        row[r] = (float*) malloc((cols) * sizeof(float));
+    return row;
+}
+
+// New data object.
+static Data ndata(const int nips, const int nops, const int rows){
+    const Data data = {
+        new2d(rows, nips), new2d(rows, nops), nips, nops, rows
+    };
+    return data;
+}
+
+static void readln(const char* file){
+    int ch = EOF;
+    int reads = 0;
+    int size = 128;
+    //char* line = (char*) malloc((size) * sizeof(char));
+
+    //Open file for reading
+    File myFile;
+    myFile = SD.open(file , FILE_READ);
+    
+    //char varChar = myFile.read()
+    
+    //while( myFile.available() ){
+
+      String line = myFile.readStringUntil('\r');
+      /*
+      char varChar = myFile.read()
+        line[reads++] = ch;
+        if(reads + 1 == size)
+            line = (char*) realloc((line), (size *= 2) * sizeof(char));
+      */
+    //}
+    
+    //line[reads] = '\0';
+
+    Serial.println(line);
+
+    myFile.close();
+    
+    //return line[0];
 }
 
 static int lns(const char* file){
 
-    int ch = EOF;
     int lines = 0;
-    int pc = '\n';
 
     Serial.print("FileName: ");
     Serial.println(file);
@@ -84,28 +130,14 @@ static int lns(const char* file){
     File myFile;
     myFile = SD.open(file , FILE_READ);
 
-    Serial.println("File open");
+    while (myFile.available()) {
+      char varChar = myFile.read();
+      //Serial.write(varChar);
 
-    /*
-    while(ch = myFile.available()){
-      Serial.write(myFile.read() );
-        if(ch == '\r')
-        Serial.println("");
-            lines++;
-        pc = ch;
-    }
-    */
-    while(myFile.available()){
-      Serial.write(myFile.read() );
-    }
-
-    Serial.println("Done");
-
-    /*
-    if(pc != '\n')
+      if(varChar == '\r'){
         lines++;
-    //rewind(file);
-    myFile.close();
+      }
+    }
+
     return lines;
-    */
 }
