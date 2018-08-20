@@ -63,7 +63,7 @@ float latestFFT[FFTLENGTH];
 
 //Define data file
 //File file;
-#define FILENAME "mostlyWoofs.data"
+#define FILENAME "data" //mostlyWoofs.data
 
 //SD Card
 const int chipSelect = BUILTIN_SDCARD;
@@ -74,7 +74,7 @@ const int nops = 2;
 float rate = 0.1f;
 const int nhid = 48;
 const float anneal = 0.99f;
-const int iterations = 32;
+const int iterations = 2; //32
 
 // Data object.
 typedef struct {
@@ -98,6 +98,8 @@ void processIncomingSerial(int incomingByte);
 
 uint32_t seed_value;
 
+//Build NN
+Tinn tinn = xtbuild(nips, nhid, nops);
 
 void setup() {
   // Audio connections require memory to work.  For more
@@ -141,6 +143,7 @@ void setup() {
 
   Entropy.Initialize();
   seed_value = Entropy.random();
+
 }
 
 
@@ -169,7 +172,7 @@ void loop() {
 
     //Predict - Continuous
     if(menuPredictData){
-      //Some function to predict data
+      predictFn();
     }
 
   }//End if fft.available
@@ -189,7 +192,7 @@ void loop() {
     menuTrainData = false;
 
     //Start training
-    const Tinn tinn = xtbuild(nips, nhid, nops);
+    //const Tinn tinn = xtbuild(nips, nhid, nops);
     for(int i = 0; i < iterations; i++){
         shuffle(data);
         float error = 0.0f;
@@ -211,11 +214,6 @@ void loop() {
            
         rate *= anneal;
     }
-
-    //Need to modify function to save Tinn
-
-    dfree(data);
-
     Serial.println("Done Building");
   }
 
@@ -299,60 +297,79 @@ void processIncomingSerial(int incomingByte){
 //************* TINN *****************//
 
 // Modified! - Returns the number of lines in a file.
-//static int lns(FILE* const file)
 static int lns(const char* file){
 
-    int ch = EOF;
     int lines = 0;
-    int pc = '\n';
 
-    Serial.print("FileName: ");
-    Serial.println(file);
+    //Serial.print("FileName: ");
+    //Serial.println(file);
     
     //Open file for reading
     File myFile;
     myFile = SD.open(file , FILE_READ);
 
-    //while((ch = getc(file)) != EOF)
-    while(ch = myFile.available()){
-      Serial.write(myFile.read() );
-        if(ch == '\n')
-        Serial.println("");
-            lines++;
-        pc = ch;
-    }
-    if(pc != '\n')
+    while (myFile.available()) {
+      char varChar = myFile.read();
+      //Serial.write(varChar);
+
+      if(varChar == '\r'){
         lines++;
-    //rewind(file);
-    myFile.close();
+      }
+    }
+
     return lines;
 }
 
 
-// Modified - Reads a line from a file.
-//static char* readln(FILE* const file)
-static char* readln(const char* file){
-    int ch = EOF;
-    int reads = 0;
-    int size = 128;
-    char* line = (char*) malloc((size) * sizeof(char));
+static char* readln(const char* file, int lineNum){
+  int charCount = 0;
+  int currLineNum = 0;  
+  String line;
 
-    //Open file for reading
-    File myFile;
-    myFile = SD.open(file , FILE_READ);
-    
-    //while((ch = getc(file)) != '\n' && ch != EOF)
-    while( myFile.available() && ((ch = myFile.read()) != '\n') )
-    {
-        line[reads++] = ch;
-        if(reads + 1 == size)
-            line = (char*) realloc((line), (size *= 2) * sizeof(char));
+  //Open file for reading
+  File myFile;
+  myFile = SD.open(file , FILE_READ);
+
+  Serial.print("Reading line: ");
+  Serial.println(lineNum);
+
+  while( myFile.available() ){
+
+    //Get char and update counter
+    char varChar = myFile.read(); 
+    charCount++;
+
+    //Found a line
+    if(varChar == '\r'){
+      line[ charCount ] = '\0';
+
+      if(currLineNum == lineNum){
+         break;
+      } else {
+        line = "";
+        charCount = 0;
+        currLineNum++;
+        myFile.read(); 
+      }
+
+    } else {
+      line += varChar;
     }
-    line[reads] = '\0';
+  }
 
-    myFile.close();
-    
-    return line;
+  //Serial.print("Actual Line: ");
+  //Serial.println(line);
+  
+  myFile.close();
+
+  //Convert to char*
+  char copyArray[charCount];
+  line.toCharArray(copyArray, charCount);
+
+  //Serial.print("Number of characters read: ");
+  //Serial.println( charCount );
+  
+  return copyArray;
 }
 
 // New 2D array of floats.
@@ -378,6 +395,7 @@ static void parse(const Data data, char* line, const int row)
     for(int col = 0; col < cols; col++)
     {
         const float val = atof(strtok(col == 0 ? line : NULL, " "));
+        //Serial.println(val);
         if(col < data.nips)
             data.in[row][col] = val;
         else
@@ -420,16 +438,57 @@ static Data build(const char* path, const int nips, const int nops){
 
   //File open/close functions are done per function (lns and readln)
   const int rows = lns(path);
-  Serial.println(rows, DEC);
 
   Data data = ndata(nips, nops, rows);
 
   for(int row = 0; row < rows; row++){
-      char* line = readln(path);
+      //Modified
+      char* line = readln(path, row);
+      //Error here? When parsing (below), all values are 0.0000
       parse(data, line, row);
       free(line);
   }
   Serial.println("Done Building");
   
   return data;
+}
+
+
+void predictFn(){
+  Serial.println("Predict Function");
+    // Now we do a prediction with the neural network we loaded from disk.
+    // Ideally, we would also load a testing set to make the prediction with,
+    // but for the sake of brevity here we just reuse the training set from earlier.
+    // One data set is picked at random (zero index of input and target arrays is enough
+    // as they were both shuffled earlier).
+
+    int c = 0;
+    for(c=0; c < 51; c++){
+
+          Serial.println(c);
+        const float* const in = data.in[c];
+        const float* const tg = data.tg[c];
+        const float* const pd = xtpredict(tinn, in);
+    
+        // Prints target.
+        xxtprint(tg, data.nops);
+        // Prints prediction.
+        xxtprint(pd, data.nops);
+    
+        Serial.println("Done predicting");
+
+    }
+    // All done. Let's clean up.
+    //xtfree(tinn);
+    //dfree(data);
+}
+
+// Prints an array of floats. Useful for printing predictions.
+void xxtprint(const float* arr, const int size)
+{
+    for(int i = 0; i < size; i++)
+        Serial.print( ((double)arr[i]) );
+        //printf("%f ", (double) arr[i]);
+    //printf("\n");
+    Serial.println("");
 }
