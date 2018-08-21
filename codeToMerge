@@ -74,7 +74,7 @@ const int nops = 2;
 float rate = 0.1f;
 const int nhid = 48;
 const float anneal = 0.99f;
-const int iterations = 2; //32
+const int iterations = 32; 
 
 // Data object.
 typedef struct {
@@ -170,9 +170,11 @@ void loop() {
       printFFT();
     }
 
-    //Predict - Continuous
+    //Predict
     if(menuPredictData){
       predictFn();
+      //Remove line below to make continuous predictions
+      menuPredictData = false;
     }
 
   }//End if fft.available
@@ -192,7 +194,6 @@ void loop() {
     menuTrainData = false;
 
     //Start training
-    //const Tinn tinn = xtbuild(nips, nhid, nops);
     for(int i = 0; i < iterations; i++){
         shuffle(data);
         float error = 0.0f;
@@ -201,15 +202,13 @@ void loop() {
             const float* const tg = data.tg[j];
             error += xttrain(tinn, in, tg, rate);
         }
-        /*printf("error %.12f :: learning rate %f\n",
-            (double) error / data.rows,
-            (double) rate);
-        */
-        
+
         Serial.print("Error ");
         Serial.print( (error / data.rows), 4 );
         Serial.print(" :: learning rate ");
         Serial.print(rate, 4);
+        Serial.print(" :: iteration ");
+        Serial.print(i);
         Serial.println(" ");
            
         rate *= anneal;
@@ -268,13 +267,13 @@ void processIncomingSerial(int incomingByte){
         break;
 
       case 'l':
-        Serial.println("Load Data");
+        Serial.println("Loading Data");
         menuLoadData = true;
         break;
 
       case 't':
         menuTrainData = true;
-        Serial.println("Train Data");
+        Serial.println("Training Data");
         break;
 
       case 'p':
@@ -330,8 +329,8 @@ static char* readln(const char* file, int lineNum){
   File myFile;
   myFile = SD.open(file , FILE_READ);
 
-  Serial.print("Reading line: ");
-  Serial.println(lineNum);
+  //Serial.print("Reading line: ");
+  //Serial.println(lineNum);
 
   while( myFile.available() ){
 
@@ -357,17 +356,15 @@ static char* readln(const char* file, int lineNum){
     }
   }
 
-  Serial.print("Actual Line: ");
-  Serial.println(line);
-  
   myFile.close();
 
   //Convert to char*
-  char* copyArray = (char*) malloc((128) * sizeof(char));
+  charCount++;
+  char* copyArray = (char*) malloc((charCount) * sizeof(char));
   line.toCharArray(copyArray, charCount);
 
-  Serial.print("Array: ");
-  Serial.println(copyArray);
+  //Serial.print("Array: ");
+  //Serial.println(copyArray);
 
   copyArray[charCount] = '\0';
   
@@ -446,13 +443,11 @@ static Data build(const char* path, const int nips, const int nops){
   for(int row = 0; row < rows; row++){
       //Modified
       char* line = readln(path, row);
-
-      Serial.println("Back from reading");
-      
-      //Error here? When parsing (below), all values are 0.0000
+      Serial.print("...");
       parse(data, line, row);
       free(line);
   }
+  Serial.println(".");
   Serial.println("Done Building");
   
   return data;
@@ -470,17 +465,19 @@ void predictFn(){
     int c = 0;
     for(c=0; c < 51; c++){
 
-          Serial.println(c);
+        Serial.print("Sample Number: ");
+        Serial.println(c);
         const float* const in = data.in[c];
         const float* const tg = data.tg[c];
         const float* const pd = xtpredict(tinn, in);
     
         // Prints target.
+        Serial.print("Target: ");
         xxtprint(tg, data.nops);
+        
         // Prints prediction.
+        Serial.print("Prediction: ");
         xxtprint(pd, data.nops);
-    
-        Serial.println("Done predicting");
 
     }
     // All done. Let's clean up.
@@ -489,11 +486,11 @@ void predictFn(){
 }
 
 // Prints an array of floats. Useful for printing predictions.
-void xxtprint(const float* arr, const int size)
-{
-    for(int i = 0; i < size; i++)
-        Serial.print( ((double)arr[i]) );
-        //printf("%f ", (double) arr[i]);
-    //printf("\n");
-    Serial.println("");
+void xxtprint(const float* arr, const int sizeNum){
+  //Only have 2 outputs
+  Serial.print(arr[0]);
+  Serial.print(" - ");
+  Serial.print(arr[1]);
+  Serial.println(" ");  
 }
+
