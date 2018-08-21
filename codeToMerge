@@ -357,17 +357,19 @@ static char* readln(const char* file, int lineNum){
     }
   }
 
-  //Serial.print("Actual Line: ");
-  //Serial.println(line);
+  Serial.print("Actual Line: ");
+  Serial.println(line);
   
   myFile.close();
 
   //Convert to char*
   char* copyArray = (char*) malloc((128) * sizeof(char));
-  line.toCharArray(copyArray, charCount+1);
+  line.toCharArray(copyArray, charCount);
 
-  //Serial.print("Number of characters read: ");
-  //Serial.println( charCount );
+  Serial.print("Array: ");
+  Serial.println(copyArray);
+
+  copyArray[charCount] = '\0';
   
   return copyArray;
 }
@@ -444,6 +446,9 @@ static Data build(const char* path, const int nips, const int nops){
   for(int row = 0; row < rows; row++){
       //Modified
       char* line = readln(path, row);
+
+      Serial.println("Back from reading");
+      
       //Error here? When parsing (below), all values are 0.0000
       parse(data, line, row);
       free(line);
