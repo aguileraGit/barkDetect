@@ -56,6 +56,9 @@ volatile bool menuLoadData = false;
 volatile bool menuTrainData = false;
 volatile bool menuPredictData = false;
 volatile bool menuPrintMenu = false;
+volatile bool menuBreakDown = false;
+volatile bool menuSaveTinn = false;
+volatile bool menuLoadTinn = false;
 
 //Always store the latest FFT for analysis, printing, etc
 #define FFTLENGTH 512
@@ -74,7 +77,7 @@ const int nops = 2;
 float rate = 0.1f;
 const int nhid = 48;
 const float anneal = 0.99f;
-const int iterations = 32; 
+const int iterations = 1; //32
 
 // Data object.
 typedef struct {
@@ -130,6 +133,9 @@ void setup() {
   menuTrainData = false;
   menuPredictData = false;
   menuPrintMenu = true;
+  menuBreakDown = false;
+  menuSaveTinn = false;
+  menuLoadTinn = false;
 
   //Start SD Card
   Serial.print("Initializing SD card...");
@@ -221,7 +227,29 @@ void loop() {
     menuPrintMenu = false;
     printMenu();
   }
-  
+
+  //BreakDownNN
+  if(menuBreakDown){
+    menuBreakDown = false;
+    //xtfree(loaded);
+    dfree(data);
+  }
+
+  //Save Tinn NN
+  if(menuSaveTinn){
+    menuSaveTinn = false;
+    xxtsave(tinn, "someTinnNN");
+  }
+
+  //Load Tinn NN
+  if(menuLoadTinn){
+    menuLoadTinn = false;
+
+    tinn = xxtload("someTinnNN");
+
+    //Need to load data. 
+    data = build(FILENAME, nips, nops);
+  }
   
 }
 
@@ -233,8 +261,11 @@ void printMenu(void){
   Serial.println("f - Print FFT values");
   Serial.println("l - Load training data");
   Serial.println("t - Train data");
+  Serial.println("b - Breakdown NN");
   Serial.println("p - Predict data");
   Serial.println("h - Prints this menu");
+  Serial.println("s - Save TINN NN");
+  Serial.println("k - Load TINN NN");
 }
 
 void getFFT(void){
@@ -283,12 +314,29 @@ void processIncomingSerial(int incomingByte){
         } else {
           Serial.println("Done Predicting Data");
         }
+        break;
+
+      case 'b':
+        Serial.print("Break down NN - Free Mem");
+        menuBreakDown = true;
+        break;
 
       case 'h':
         menuPrintMenu = true;
         break;
+
+      case 's':
+        Serial.println("Save Tinn NN");
+        menuSaveTinn = true;
+        break;
+
+      case 'k':
+        Serial.println("Load Tinn NN");
+        menuLoadTinn = true;
+        break;
         
       default:
+        Serial.println("Unknown Option");
         break;
     }
 }
@@ -480,9 +528,7 @@ void predictFn(){
         xxtprint(pd, data.nops);
 
     }
-    // All done. Let's clean up.
-    //xtfree(tinn);
-    //dfree(data);
+
 }
 
 // Prints an array of floats. Useful for printing predictions.
@@ -494,3 +540,136 @@ void xxtprint(const float* arr, const int sizeNum){
   Serial.println(" ");  
 }
 
+// Saves a tinn to disk.
+void xxtsave(const Tinn t, const char* const path){
+
+    unsigned long lineNum = 0;
+    
+    File myFile;
+    myFile = SD.open("SomeNN" , FILE_WRITE);
+
+    if(myFile){
+    
+      // Save header.
+      myFile.print(t.nips);
+      myFile.print(" ");
+      myFile.print(t.nhid);
+      myFile.print(" ");
+      myFile.print(t.nops);
+      myFile.print("\r");
+
+  
+      //Serial.print(t.nips);
+      //Serial.print(" ");
+      //Serial.print(t.nhid);
+      //Serial.print(" ");
+      //Serial.println(t.nops);
+  
+      //Arduino SD Lib can't handle floats - https://stackoverflow.com/questions/2988791/converting-float-to-char
+      //4 is mininum width, 3 is precision; float value is copied onto buff
+      //dtostrf(123.234, 4, 3, charVal);
+      char charVal[10];
+      
+      //Save biases
+      Serial.println("Saving biases");
+      for(int i = 0; i < t.nb; i++){
+        dtostrf( ((double)t.b[i]), 4, 3, charVal );
+        myFile.println(charVal);
+        //Serial.println(charVal);
+        lineNum++;
+      }
+      Serial.print("Lines saved: ");
+      Serial.println(lineNum);
+      
+      //Save weights
+      Serial.println("Saving weights");
+      lineNum = 0;
+      for(int i = 0; i < t.nw; i++){
+        dtostrf( ((double)t.w[i]), 4, 3, charVal );
+        myFile.println(charVal);
+        //Serial.println(charVal);
+        lineNum++;
+      }
+      Serial.print("Lines saved: ");
+      Serial.println(lineNum);
+    
+    
+      Serial.println("Done Saving");
+      myFile.close();
+    }
+}
+
+// Loads a tinn from disk.
+Tinn xxtload(const char* const path){
+
+    unsigned long lineNum = 0;
+    
+    int nips = 512;
+    int nhid = 48;
+    int nops = 2;
+      
+    const Tinn tt = xtbuild(nips, nhid, nops);
+    
+    //FILE* const file = fopen(path, "r");
+    File myFile;
+    myFile = SD.open("SomeNN");
+
+    if(myFile){
+       Serial.println("File opened!");
+
+      //while(myFile.available()){
+
+        // Load header.
+        for(int i = 0; i < 3; i++){
+          String header = myFile.readStringUntil(' ');
+          if(i == 0){
+            nips = header.toFloat();
+            Serial.println(nips);
+          }
+          if(i == 1){
+            nhid = header.toFloat();
+            Serial.println(nhid);
+          }
+          if(i == 2){
+            nops = header.toFloat();
+            Serial.println(nops);
+          }
+        }
+
+        //Read rest of line
+        myFile.readStringUntil('\r');
+
+        // Load biases
+        Serial.println("Loading biases");
+        //for(int i = 0; i < t.nb; i++) fscanf(file, "%f\n", &t.b[i]);
+        for(int i = 0; i < tt.nb; i++){
+          //&t.b[i]
+          String biasVar = myFile.readStringUntil('\r');
+          //Serial.println(biasVar.toFloat(), 3);
+          lineNum++;
+        }
+
+        Serial.print("Lines read: ");
+        Serial.println(lineNum);
+        
+        //Load weights
+        lineNum = 0;
+        Serial.println("Loading weights");
+        //for(int i = 0; i < t.nw; i++) fscanf(file, "%f\n", &t.w[i]);
+        for(int i = 0; i < tt.nw; i++){
+          String weightsVar = myFile.readStringUntil('\r');
+          //Serial.println(weightsVar.toFloat(), 3);
+          lineNum++;
+        }
+
+        Serial.print("Lines read: ");
+        Serial.println(lineNum);
+        
+     // }// end while available
+    
+      Serial.println("Done Loading");
+      myFile.close();
+
+    }// end if myFile
+    return tt;
+}
