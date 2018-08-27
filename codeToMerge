@@ -377,6 +377,11 @@ static char* readln(const char* file, int lineNum){
   File myFile;
   myFile = SD.open(file , FILE_READ);
 
+
+  if(!myFile){
+    Serial.println("Error reading file");
+  }
+  
   //Serial.print("Reading line: ");
   //Serial.println(lineNum);
 
@@ -482,11 +487,15 @@ static void shuffle(const Data d)
 
 //Modified - Uses path instead of file. Other changes.
 static Data build(const char* path, const int nips, const int nops){
-
+  
   //File open/close functions are done per function (lns and readln)
   const int rows = lns(path);
 
+  Serial.println("Build Data - 1");
+
   Data data = ndata(nips, nops, rows);
+
+  Serial.println("Build Data - 2");
 
   for(int row = 0; row < rows; row++){
       //Modified
@@ -496,7 +505,7 @@ static Data build(const char* path, const int nips, const int nops){
       free(line);
   }
   Serial.println(".");
-  Serial.println("Done Building");
+  Serial.println("Done Loading");
   
   return data;
 }
@@ -615,10 +624,8 @@ Tinn xxtload(const char* const path){
     myFile = SD.open("SomeNN");
 
     if(myFile){
-       Serial.println("File opened!");
-
-      //while(myFile.available()){
-
+        Serial.println("File opened!");
+        
         // Load header.
         for(int i = 0; i < 3; i++){
           String header = myFile.readStringUntil(' ');
@@ -635,20 +642,20 @@ Tinn xxtload(const char* const path){
             Serial.println(nops);
           }
         }
-
+        
         //Read rest of line
         myFile.readStringUntil('\r');
-
+        
         // Load biases
         Serial.println("Loading biases");
         //for(int i = 0; i < t.nb; i++) fscanf(file, "%f\n", &t.b[i]);
         for(int i = 0; i < tt.nb; i++){
-          //&t.b[i]
           String biasVar = myFile.readStringUntil('\r');
+          tt.b[i] = (float)biasVar.toFloat();
           //Serial.println(biasVar.toFloat(), 3);
           lineNum++;
         }
-
+        
         Serial.print("Lines read: ");
         Serial.println(lineNum);
         
@@ -658,18 +665,19 @@ Tinn xxtload(const char* const path){
         //for(int i = 0; i < t.nw; i++) fscanf(file, "%f\n", &t.w[i]);
         for(int i = 0; i < tt.nw; i++){
           String weightsVar = myFile.readStringUntil('\r');
+          tt.w[i] = weightsVar.toFloat();
           //Serial.println(weightsVar.toFloat(), 3);
           lineNum++;
         }
-
+        
         Serial.print("Lines read: ");
         Serial.println(lineNum);
-        
-     // }// end while available
     
       Serial.println("Done Loading");
-      myFile.close();
+      //myFile.close();
 
     }// end if myFile
+
+    myFile.close();
     return tt;
 }
