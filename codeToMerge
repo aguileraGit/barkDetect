@@ -19,7 +19,6 @@ extern "C"{
   #include "Tinn.h"
 }
 
-
 /*
 uC Reference
 https://www.nxp.com/docs/en/reference-manual/K66P144M180SF5RMV2.pdf
@@ -34,17 +33,7 @@ https://github.com/glouw/tinn
 
 //Inputs
 AudioInputAnalog         adc1;           //xy=161,80
-//AudioSynthWaveformSine   sinewave;
-
-//Outputs
-//AudioOutputAnalog        dac1;           //xy=329,47
-//AudioOutputPWM           pwm1;           //xy=331,125
 AudioAnalyzeFFT1024      fft1;
-
-
-//AudioConnection          patchCord1(adc1, dac1);
-//AudioConnection          patchCord2(adc1, pwm1);
-//AudioConnection          patchCord(adc1, fft1);
 AudioConnection          patchCord(adc1, fft1);
 
 //Debug LED
@@ -60,18 +49,18 @@ volatile bool menuBreakDown = false;
 volatile bool menuSaveTinn = false;
 volatile bool menuLoadTinn = false;
 
-//Always store the latest FFT for analysis, printing, etc
+//Store the latest FFT for analysis, printing, etc
 #define FFTLENGTH 512
 float latestFFT[FFTLENGTH];
 
-//Define data file
-//File file;
+//Define data file 
+// Note filenames have to keep kept short "data" is actually mostlyWoofs.data
 #define FILENAME "data" //mostlyWoofs.data
 
 //SD Card
 const int chipSelect = BUILTIN_SDCARD;
 
-//TINN related
+//TINN variable
 const int nips = 512;
 const int nops = 2;
 float rate = 0.1f;
@@ -79,7 +68,7 @@ const int nhid = 48;
 const float anneal = 0.99f;
 const int iterations = 1; //32
 
-// Data object.
+// Tinn data object.
 typedef struct {
     // 2D floating point array of input.
     float** in;
@@ -101,7 +90,7 @@ void processIncomingSerial(int incomingByte);
 
 uint32_t seed_value;
 
-//Build NN
+//Create NN
 Tinn tinn = xtbuild(nips, nhid, nops);
 
 void setup() {
@@ -141,7 +130,7 @@ void setup() {
   Serial.print("Initializing SD card...");
 
   if (!SD.begin(chipSelect)) {
-  Serial.println("initialization failed!");
+    Serial.println("initialization failed!");
   return;
   }
   
@@ -149,13 +138,12 @@ void setup() {
 
   Entropy.Initialize();
   seed_value = Entropy.random();
-
 }
 
 
 void loop() {
 
-  //Handle incoming serial - Function called should always set/unset a boolean
+  //Handle incoming serial
   int incomingByte;
   if (Serial.available() > 0) {
     incomingByte = Serial.read();
@@ -187,15 +175,14 @@ void loop() {
 
 
 
-  //Load training data
+  //Load training data from SD Card (data file)
   if(menuLoadData){
     menuLoadData = false;
-    
-    //Modified
+ 
     data = build(FILENAME, nips, nops);
   }
 
-  //Train data
+  //Train data - Data must be loaded first
   if(menuTrainData){
     menuTrainData = false;
 
@@ -222,51 +209,38 @@ void loop() {
     Serial.println("Done Building");
   }
 
-  //Print Menu
+  //Print Help Menu
   if(menuPrintMenu){
     menuPrintMenu = false;
     printMenu();
   }
 
-  //BreakDownNN
+  //BreakDownNN - Free memory
   if(menuBreakDown){
     menuBreakDown = false;
     //xtfree(loaded);
     dfree(data);
   }
 
-  //Save Tinn NN
+  //Save Tinn NN to SD Card
   if(menuSaveTinn){
     menuSaveTinn = false;
     xxtsave(tinn, "someTinnNN");
   }
 
-  //Load Tinn NN
+  //Load Tinn NN from SD Card
   if(menuLoadTinn){
     menuLoadTinn = false;
 
     tinn = xxtload("someTinnNN");
 
-    //Need to load data. 
-    data = build(FILENAME, nips, nops);
+    //data = build(FILENAME, nips, nops);
   }
   
 }
 
 
-//********** Begin other functions **********//
-
-void printMenu(void){
-  Serial.println("===Menu===");
-  Serial.println("f - Print FFT values");
-  Serial.println("l - Load training data");
-  Serial.println("t - Train data");
-  Serial.println("b - Breakdown NN");
-  Serial.println("p - Predict data");
-  Serial.println("h - Prints this menu");
-  Serial.println("s - Save TINN NN");
-  Serial.println("k - Load TINN NN");
-}
+//********** FFT Functions **********//
 
 void getFFT(void){
   int i;
@@ -284,6 +258,20 @@ void printFFT(void){
   Serial.println(" ");
 }
 
+
+//********** Menu and Serial Functions **********//
+
+void printMenu(void){
+  Serial.println("========= Menu =========");
+  Serial.println("f - Print FFT values");
+  Serial.println("h - Prints this menu");
+  Serial.println("l - Load training data");
+  Serial.println("t - Train data");
+  Serial.println("p - Predict data");
+  Serial.println("s - Save TINN NN");
+  Serial.println("k - Load TINN NN");
+  Serial.println("b - Breakdown NN");
+}
 
 void processIncomingSerial(int incomingByte){
 
@@ -341,11 +329,12 @@ void processIncomingSerial(int incomingByte){
     }
 }
 
-//************* TINN *****************//
+//********** TINN related Functions **********//
+// This doesn't touch the core Tinn Functions. These are "helper" functions found in
+// test.c in the Tinn repo. 
 
-// Modified! - Returns the number of lines in a file.
+//Returns the number of lines in a file. Modified from Original.
 static int lns(const char* file){
-
     int lines = 0;
 
     //Serial.print("FileName: ");
@@ -363,11 +352,12 @@ static int lns(const char* file){
         lines++;
       }
     }
-
+    myFile.close();
     return lines;
 }
 
 
+//Returns the number of lines in a file. Modified from Original.
 static char* readln(const char* file, int lineNum){
   int charCount = 0;
   int currLineNum = 0;  
@@ -376,7 +366,6 @@ static char* readln(const char* file, int lineNum){
   //Open file for reading
   File myFile;
   myFile = SD.open(file , FILE_READ);
-
 
   if(!myFile){
     Serial.println("Error reading file");
@@ -485,17 +474,13 @@ static void shuffle(const Data d)
     }
 }
 
-//Modified - Uses path instead of file. Other changes.
+//Builds data to be used with Training. Modified from Original.
 static Data build(const char* path, const int nips, const int nops){
   
   //File open/close functions are done per function (lns and readln)
   const int rows = lns(path);
 
-  Serial.println("Build Data - 1");
-
   Data data = ndata(nips, nops, rows);
-
-  Serial.println("Build Data - 2");
 
   for(int row = 0; row < rows; row++){
       //Modified
@@ -510,14 +495,9 @@ static Data build(const char* path, const int nips, const int nops){
   return data;
 }
 
-
+//Predict ONLY exsisting data
 void predictFn(){
   Serial.println("Predict Function");
-    // Now we do a prediction with the neural network we loaded from disk.
-    // Ideally, we would also load a testing set to make the prediction with,
-    // but for the sake of brevity here we just reuse the training set from earlier.
-    // One data set is picked at random (zero index of input and target arrays is enough
-    // as they were both shuffled earlier).
 
     int c = 0;
     for(c=0; c < 51; c++){
@@ -535,12 +515,13 @@ void predictFn(){
         // Prints prediction.
         Serial.print("Prediction: ");
         xxtprint(pd, data.nops);
-
     }
-
 }
 
-// Prints an array of floats. Useful for printing predictions.
+//Prints an array of floats. Useful for printing predictions.
+// This would normally be xprint under the "core" of the Tinn repo. But,
+// this calls printf which isn't possible. 
+// Also this function will only print the two outputs. It's ugly.
 void xxtprint(const float* arr, const int sizeNum){
   //Only have 2 outputs
   Serial.print(arr[0]);
@@ -555,6 +536,12 @@ void xxtsave(const Tinn t, const char* const path){
     unsigned long lineNum = 0;
     
     File myFile;
+
+    //Remove file so not too append to it.
+    if (SD.exists("SomeNN")){
+      SD.remove("SomeNN");
+    }
+    //Open file
     myFile = SD.open("SomeNN" , FILE_WRITE);
 
     if(myFile){
@@ -564,8 +551,8 @@ void xxtsave(const Tinn t, const char* const path){
       myFile.print(" ");
       myFile.print(t.nhid);
       myFile.print(" ");
-      myFile.print(t.nops);
-      myFile.print("\r");
+      myFile.println(t.nops);
+      //myFile.println("\r");
 
   
       //Serial.print(t.nips);
@@ -580,27 +567,33 @@ void xxtsave(const Tinn t, const char* const path){
       char charVal[10];
       
       //Save biases
+      //myFile.println("Saving biases");
       Serial.println("Saving biases");
       for(int i = 0; i < t.nb; i++){
         dtostrf( ((double)t.b[i]), 4, 3, charVal );
         myFile.println(charVal);
-        //Serial.println(charVal);
+        Serial.println(charVal);
         lineNum++;
       }
       Serial.print("Lines saved: ");
       Serial.println(lineNum);
+      //myFile.print("Lines saved: ");
+      //myFile.println(lineNum);
       
       //Save weights
+      //myFile.println("Saving weights");
       Serial.println("Saving weights");
       lineNum = 0;
       for(int i = 0; i < t.nw; i++){
         dtostrf( ((double)t.w[i]), 4, 3, charVal );
         myFile.println(charVal);
-        //Serial.println(charVal);
+        Serial.println(charVal);
         lineNum++;
       }
       Serial.print("Lines saved: ");
       Serial.println(lineNum);
+      //myFile.print("Lines saved: ");
+      //myFile.println(lineNum);
     
     
       Serial.println("Done Saving");
@@ -617,9 +610,8 @@ Tinn xxtload(const char* const path){
     int nhid = 48;
     int nops = 2;
       
-    const Tinn tt = xtbuild(nips, nhid, nops);
+    Tinn tt = xtbuild(nips, nhid, nops);
     
-    //FILE* const file = fopen(path, "r");
     File myFile;
     myFile = SD.open("SomeNN");
 
@@ -630,15 +622,15 @@ Tinn xxtload(const char* const path){
         for(int i = 0; i < 3; i++){
           String header = myFile.readStringUntil(' ');
           if(i == 0){
-            nips = header.toFloat();
+            nips = header.toInt();
             Serial.println(nips);
           }
           if(i == 1){
-            nhid = header.toFloat();
+            nhid = header.toInt();
             Serial.println(nhid);
           }
           if(i == 2){
-            nops = header.toFloat();
+            nops = header.toInt();
             Serial.println(nops);
           }
         }
@@ -674,8 +666,6 @@ Tinn xxtload(const char* const path){
         Serial.println(lineNum);
     
       Serial.println("Done Loading");
-      //myFile.close();
-
     }// end if myFile
 
     myFile.close();
