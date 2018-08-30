@@ -232,9 +232,12 @@ void loop() {
   if(menuLoadTinn){
     menuLoadTinn = false;
 
+    //This works - Check out fix in xxtload
     tinn = xxtload("someTinnNN");
 
+    //Unable to open file error! Works fine if I run "L" after reboot!
     //data = build(FILENAME, nips, nops);
+    //menuLoadData = true;
   }
   
 }
@@ -533,6 +536,18 @@ void xxtprint(const float* arr, const int sizeNum){
 // Saves a tinn to disk.
 void xxtsave(const Tinn t, const char* const path){
 
+    Serial.println("Actual NN info");
+    Serial.print("nb: ");
+    Serial.println(t.nb);
+    Serial.print("nw: ");
+    Serial.println(t.nw);
+    Serial.print("nips: ");
+    Serial.println(t.nips);
+    Serial.print("nhid: ");
+    Serial.println(t.nhid);
+    Serial.print("nops: ");
+    Serial.println(t.nops);
+    
     unsigned long lineNum = 0;
     
     File myFile;
@@ -605,7 +620,7 @@ void xxtsave(const Tinn t, const char* const path){
 Tinn xxtload(const char* const path){
 
     unsigned long lineNum = 0;
-    
+
     int nips = 512;
     int nhid = 48;
     int nops = 2;
@@ -615,10 +630,15 @@ Tinn xxtload(const char* const path){
     File myFile;
     myFile = SD.open("SomeNN");
 
-    if(myFile){
+    if(!myFile){
+      Serial.println("Error opening file");
+    } else {
+    
+    //if(myFile){
         Serial.println("File opened!");
         
-        // Load header.
+        // Load header. - Error here! It's reading more lines than expected!
+        /*
         for(int i = 0; i < 3; i++){
           String header = myFile.readStringUntil(' ');
           if(i == 0){
@@ -634,7 +654,8 @@ Tinn xxtload(const char* const path){
             Serial.println(nops);
           }
         }
-        
+        */
+
         //Read rest of line
         myFile.readStringUntil('\r');
         
@@ -644,7 +665,9 @@ Tinn xxtload(const char* const path){
         for(int i = 0; i < tt.nb; i++){
           String biasVar = myFile.readStringUntil('\r');
           tt.b[i] = (float)biasVar.toFloat();
-          //Serial.println(biasVar.toFloat(), 3);
+          Serial.print(lineNum);
+          Serial.print(" - ");
+          Serial.println(biasVar.toFloat(), 3);
           lineNum++;
         }
         
@@ -655,19 +678,39 @@ Tinn xxtload(const char* const path){
         lineNum = 0;
         Serial.println("Loading weights");
         //for(int i = 0; i < t.nw; i++) fscanf(file, "%f\n", &t.w[i]);
-        for(int i = 0; i < tt.nw; i++){
+        for(int i = 0; i < 24672; i++){
           String weightsVar = myFile.readStringUntil('\r');
           tt.w[i] = weightsVar.toFloat();
-          //Serial.println(weightsVar.toFloat(), 3);
+          Serial.print(lineNum);
+          Serial.print(" - ");
+          Serial.println(weightsVar.toFloat(), 3);
           lineNum++;
         }
         
         Serial.print("Lines read: ");
         Serial.println(lineNum);
     
-      Serial.println("Done Loading");
+        Serial.println("Done Loading");
+
+        myFile.close();
     }// end if myFile
 
-    myFile.close();
+    Serial.println("Actual NN info");
+    Serial.print("nb: ");
+    Serial.println(tt.nb);
+    Serial.print("nw: ");
+    Serial.println(tt.nw);
+    Serial.print("nips: ");
+    Serial.println(tt.nips);
+    Serial.print("nhid: ");
+    Serial.println(tt.nhid);
+    Serial.print("nops: ");
+    Serial.println(tt.nops);
+
+    //Just in case
+    if(myFile){
+      myFile.close();
+    }
+
     return tt;
 }
